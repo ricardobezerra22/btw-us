@@ -1,26 +1,69 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --color-sunflower: #f4c542;
+  --color-sunflower-hover: #e6b52e;
+  --color-olive: #647447;
+  --color-forest: #35452d;
+
+  --color-surface: #ffffff;
+  --color-background: #f7f7f5;
+  --color-muted: #efefed;
+  --color-foreground: #242424;
+  --color-secondary: #737373;
+  --color-border: #e5e5e5;
+
+  --color-success: #647447;
+  --color-error: #d94b4b;
+  --color-warning: #e6b52e;
+  --color-info: #3978b9;
+
+  --text-display: 28px;
+  --text-display--line-height: 34px;
+  --text-display--font-weight: 700;
+  --text-h1: 24px;
+  --text-h1--line-height: 30px;
+  --text-h1--font-weight: 700;
+  --text-h2: 20px;
+  --text-h2--line-height: 26px;
+  --text-h2--font-weight: 600;
+  --text-h3: 16px;
+  --text-h3--line-height: 22px;
+  --text-h3--font-weight: 600;
+  --text-body: 14px;
+  --text-body--line-height: 20px;
+  --text-small: 13px;
+  --text-small--line-height: 18px;
+  --text-caption: 12px;
+  --text-caption--line-height: 16px;
+
+  --radius-card: 14px;
+  --radius-control: 10px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-background text-body text-foreground antialiased;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-forest;
+  }
+  dialog::backdrop {
+    background: rgb(0 0 0 / 0.4);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

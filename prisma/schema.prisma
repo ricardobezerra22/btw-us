@@ -1,0 +1,136 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Platform {
+  INSTAGRAM
+  SPOTIFY
+  YOUTUBE
+  OTHER
+}
+
+model Space {
+  id          String       @id @default(cuid())
+  name        String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  users       User[]
+  items       SharedItem[]
+  collections Collection[]
+}
+
+// Shared with Better Auth: it reads/writes id, name, email, emailVerified,
+// image (mapped to avatarUrl in src/lib/auth.ts), createdAt, updatedAt.
+model User {
+  id              String       @id @default(cuid())
+  name            String
+  email           String       @unique
+  username        String?      @unique
+  displayUsername String?
+  emailVerified   Boolean      @default(false)
+  avatarUrl       String?
+  spaceId         String
+  space           Space        @relation(fields: [spaceId], references: [id], onDelete: Restrict)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  sessions        Session[]
+  accounts        Account[]
+  items           SharedItem[]
+  collections     Collection[]
+
+  @@index([spaceId])
+}
+
+model SharedItem {
+  id          String           @id @default(cuid())
+  url         String
+  platform    Platform
+  message     String?
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  spaceId     String
+  space       Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  collections CollectionItem[]
+
+  // Feed: newest first within a space, id as cursor tiebreaker.
+  @@index([spaceId, createdAt(sort: Desc), id(sort: Desc)])
+}
+
+model Collection {
+  id          String           @id @default(cuid())
+  name        String
+  description String?
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  spaceId     String
+  space       Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  items       CollectionItem[]
+
+  @@index([spaceId, createdAt])
+}
+
+model CollectionItem {
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  sharedItemId String
+  sharedItem   SharedItem @relation(fields: [sharedItemId], references: [id], onDelete: Cascade)
+  addedAt      DateTime   @default(now())
+
+  @@id([collectionId, sharedItemId])
+  @@index([sharedItemId])
+}
+
+// ---- Better Auth tables ----
+
+model Session {
+  id        String   @id
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}
